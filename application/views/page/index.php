@@ -564,6 +564,54 @@
                                 </div>
                                 <div class="tab-pane tab-pane-custom fade" id="revenue_per_truck_tab" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                                   <div class="row">
+                                    <div class="col-md-6">
+                                      <div class="input-group" style="width: 80%">
+                                        <input type="datetime" class="form-control flatpickr-range" placeholder="Filter Date Range" id="revenue_per_truck_filter" readonly>
+                                        <div class="input-group-append">
+                                          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                          <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#">Date Preset</a>
+                                            <div role="separator" class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Maximum</a>
+                                            <a class="dropdown-item" href="#">Today</a>
+                                            <a class="dropdown-item" href="#">Yesterday</a>
+                                            <a class="dropdown-item" href="#">Last 7 days</a>
+                                            <a class="dropdown-item" href="#">Last 14 days</a>
+                                            <a class="dropdown-item" href="#">Last 30 days</a>
+                                            <a class="dropdown-item" href="#">This week</a>
+                                            <a class="dropdown-item" href="#">Last week</a>
+                                            <a class="dropdown-item" href="#">This month</a>
+                                            <a class="dropdown-item" href="#">last month</a>
+
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                      <div class="input-group float-right" style="width: 80%">
+                                        <input type="datetime" class="form-control flatpickr-range" placeholder="Filter Date Range" id="revenue_per_truck_filter2" readonly>
+                                        <div class="input-group-append">
+                                          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                          <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#">Date Preset</a>
+                                            <div role="separator" class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Maximum</a>
+                                            <a class="dropdown-item" href="#">Today</a>
+                                            <a class="dropdown-item" href="#">Yesterday</a>
+                                            <a class="dropdown-item" href="#">Last 7 days</a>
+                                            <a class="dropdown-item" href="#">Last 14 days</a>
+                                            <a class="dropdown-item" href="#">Last 30 days</a>
+                                            <a class="dropdown-item" href="#">This week</a>
+                                            <a class="dropdown-item" href="#">Last week</a>
+                                            <a class="dropdown-item" href="#">This month</a>
+                                            <a class="dropdown-item" href="#">last month</a>
+
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="row">
                                     <div class="col-md-12">
                                       <div class="card rounded mt-3">
                                         <div class="card-header">
@@ -667,6 +715,54 @@
                                   </div>
                                 </div>
                                 <div class="tab-pane tab-pane-custom fade" id="tech_productivity_tab" role="tabpanel" aria-labelledby="v-pills-settings-tab">
+                                  <div class="row">
+                                    <div class="col-md-6">
+                                      <div class="input-group" style="width: 80%">
+                                        <input type="datetime" class="form-control flatpickr-range" placeholder="Filter Date Range" id="tech_productivity_filter" readonly>
+                                        <div class="input-group-append">
+                                          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                          <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#">Date Preset</a>
+                                            <div role="separator" class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Maximum</a>
+                                            <a class="dropdown-item" href="#">Today</a>
+                                            <a class="dropdown-item" href="#">Yesterday</a>
+                                            <a class="dropdown-item" href="#">Last 7 days</a>
+                                            <a class="dropdown-item" href="#">Last 14 days</a>
+                                            <a class="dropdown-item" href="#">Last 30 days</a>
+                                            <a class="dropdown-item" href="#">This week</a>
+                                            <a class="dropdown-item" href="#">Last week</a>
+                                            <a class="dropdown-item" href="#">This month</a>
+                                            <a class="dropdown-item" href="#">last month</a>
+
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                      <div class="input-group float-right" style="width: 80%">
+                                        <input type="datetime" class="form-control flatpickr-range" placeholder="Filter Date Range" id="tech_productivity_filter2" readonly>
+                                        <div class="input-group-append">
+                                          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                          <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#">Date Preset</a>
+                                            <div role="separator" class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="#">Maximum</a>
+                                            <a class="dropdown-item" href="#">Today</a>
+                                            <a class="dropdown-item" href="#">Yesterday</a>
+                                            <a class="dropdown-item" href="#">Last 7 days</a>
+                                            <a class="dropdown-item" href="#">Last 14 days</a>
+                                            <a class="dropdown-item" href="#">Last 30 days</a>
+                                            <a class="dropdown-item" href="#">This week</a>
+                                            <a class="dropdown-item" href="#">Last week</a>
+                                            <a class="dropdown-item" href="#">This month</a>
+                                            <a class="dropdown-item" href="#">last month</a>
+
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                                   <div class="row">
                                     <div class="col-md-12">
                                       <div class="card rounded mt-3">
@@ -793,7 +889,7 @@
       $(document).ready(function() {
         $(".flatpickr-range").flatpickr({
           mode: "range",
-          dateFormat: "Y-m-d",
+          dateFormat: "j-M-Y",
           // disable: [
           //     function(date) {
           //         // disable every multiple of 8

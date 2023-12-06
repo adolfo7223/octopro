@@ -2,6 +2,50 @@ $(document).ready(function() {
     const API_KEY = 'AIzaSyBYT0n_vVzZ-oxpwGzpnErgaf7pCWTf1Og';
     const OPERATION_SPREADSHEET_ID = '1VpWS5RmJZBRdBqVRUPwySGLetVPO3iqVYR8JVg5aYUo';
 
+    // Revenue Per Service Start
+    $("#revenue_per_service_filter").change(function() {
+        $("#revenue_per_service_left").remove();
+        $("#operation_revenue_chart_left_container").append(`<canvas id="revenue_per_service_left" width="400" height="600"></canvas>`);
+
+        gapi.load('client', function() {
+            initClientOperation('left');
+        });
+
+    })
+
+    $("#revenue_per_service_filter2").change(function() {
+        $("#revenue_per_service_right").remove();
+        $("#operation_revenue_chart_right_container").append(`<canvas id="revenue_per_service_right" width="400" height="600"></canvas>`);
+
+        gapi.load('client', function() {
+            initClientOperation('right');
+        });
+
+    })
+    // Revenue Per Service End
+
+    // Revenue Per Truck Start
+    $("#revenue_per_truck_filter").change(function() {
+        $("#revenue_per_truck_left").remove();
+        $("#operation_revenue_truck_chart_left_container").append(`<canvas id="revenue_per_truck_left" width="400" height="600"></canvas>`);
+
+        gapi.load('client', function() {
+            initClientOperationTruck('left');
+        });
+
+    })
+
+    $("#revenue_per_truck_filter2").change(function() {
+        $("#revenue_per_truck_right").remove();
+        $("#operation_revenue_truck_chart_right_container").append(`<canvas id="revenue_per_truck_right" width="400" height="600"></canvas>`);
+
+        gapi.load('client', function() {
+            initClientOperationTruck('right');
+        });
+
+    })
+    // Revenue Per Truck End
+
     $("#sales_from_left").change(function() {
 
         $("#revenue_per_service_left").remove();
@@ -55,6 +99,7 @@ $(document).ready(function() {
     })
 
     gapi.load('client', initClientOperation);
+    gapi.load('client', initClientOperationTruck);
 
     function initClientOperation(side) {
         gapi.client.init({
@@ -67,6 +112,17 @@ $(document).ready(function() {
         });
     }
 
+    function initClientOperationTruck(side) {
+        gapi.client.init({
+            apiKey: 'AIzaSyBYT0n_vVzZ-oxpwGzpnErgaf7pCWTf1Og',
+            discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+        }).then(function () {
+            // After the API is loaded, you can use it to fetch data
+            fetchGoogleSheetDataOperationTruck(side);
+            fetchGoogleSheetDataLaborPercentage()
+        });
+    }
+
     function fetchGoogleSheetDataOperation(side) {
         gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: OPERATION_SPREADSHEET_ID,
@@ -75,13 +131,35 @@ $(document).ready(function() {
             const values = response.result.values;
 
             if (side == "left") {
-                create_charts_service_revenue_left(values);
-                create_charts_truck_revenue_left(values);
+                // create_charts_service_revenue_left(values);
+                // create_charts_truck_revenue_left(values);
+                create_charts_service_revenue_filter_left(values);
             } else if (side == "right") {
-                create_charts_service_revenue_right(values);
-                create_charts_truck_revenue_right(values);
+                // create_charts_service_revenue_right(values);
+                // create_charts_truck_revenue_right(values);
+                create_charts_service_revenue_filter_right(values);
             } else {
                 create_charts_service_revenue_default(values);
+            }
+
+            // create_charts_truck_revenue(values);
+        }, function (error) {
+            console.error('Error fetching Google Sheet data:', error);
+        });
+    }
+
+    function fetchGoogleSheetDataOperationTruck(side) {
+        gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: OPERATION_SPREADSHEET_ID,
+            range: `'Transaction List'!A2:L`, // Change this to the specific sheet and range you want to fetch
+        }).then(function (response) {
+            const values = response.result.values;
+
+            if (side == "left") {
+                create_charts_truck_revenue_filter_left(values);
+            } else if (side == "right") {
+                create_charts_truck_revenue_filter_right(values);
+            } else {
                 create_charts_truck_revenue_default(values);
             }
 
@@ -405,6 +483,233 @@ $(document).ready(function() {
         });
     }
 
+    function create_charts_service_revenue_filter_left(records) {
+        var date_filter = $("#revenue_per_service_filter").val().split('to');
+        var sales_from_left = Math.floor(new Date(date_filter[0]).getTime() / 1000);
+        var sales_to_left = Math.floor(new Date(date_filter[1]).getTime() / 1000)
+
+        console.log(sales_from_left)
+        console.log(sales_to_left)
+
+        if (date_filter[0] && date_filter[1]) {
+            var new_records = [];
+            var total_service_revenue = 0;
+            $.each(records, function(key, value) {
+                var record_date = Math.floor(new Date(value[0]).getTime() / 1000);
+
+                if (sales_from_left <= record_date && sales_to_left >= record_date) {
+                    if (value[11]) {
+                        var total_service_revenue_split = value[11].split('$');
+                        total_service_revenue += parseFloat(total_service_revenue_split.toString().replace(/,/g, ''))
+                    } else {
+                        total_service_revenue += 0;
+                    }
+
+                    new_records[key] = value[7];
+                }
+
+            })
+
+            new_records = [...new Set(records.map(x => x[7]?x[7]:'unknown'))];
+
+            var service_revenue = [];
+            $.each(new_records, function(key, value) {
+                var revenue = 0;
+                $.each(records, function(records_key, records_value) {
+                    var record_date = Math.floor(new Date(records_value[0]).getTime() / 1000);
+                    
+                    if (sales_from_left <= record_date && sales_to_left >= record_date) {
+                        if (value == records_value[7]) {
+                            // console.log(records_value[10])
+                            if (records_value[11]) {
+                            var record_value_amount = records_value[11];
+                            record_value_amount = record_value_amount.split('$')
+                            var record_value_amount_converted = parseFloat(record_value_amount.toString().replace(/,/g, ''));
+
+                            if (Number.isFinite(record_value_amount_converted)) {
+                                record_value_amount_converted = record_value_amount_converted;
+                            } else {
+                                record_value_amount_converted = 0;
+                            }
+
+                            } else {
+                            var record_value_amount = 0;
+                            var record_value_amount_converted = record_value_amount;
+                            }
+                            revenue += record_value_amount_converted;
+                        }
+                    }
+                })
+
+                service_revenue[key] = (revenue / total_service_revenue) * 100;
+            })
+
+            var ctx = document.getElementById('revenue_per_service_left').getContext('2d');
+
+            // // Define the data for the chart
+            var data = {
+                labels: new_records,
+                datasets: [{
+                    data: service_revenue, // Replace with your data values
+                }]
+            };
+
+            // // Define the options for the chart
+            var options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutoutPercentage: 50, // Adjust the size of the hole (0-100)
+                legend: {
+                    display: false,  // Hide the default legend
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        align: 'center',
+                        labels: {
+                            boxWidth: 15,
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                var label = context.label || '';
+
+                                if (label) {
+                                    label += ': ';
+                                }
+
+                                label += parseFloat(context.formattedValue).toFixed(2) + '%';
+
+                                return label;
+                            }
+                        }
+                    }
+                }
+            };
+
+            // // Create the doughnut chart
+            var myDoughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: options
+            });
+        }
+    }
+
+    function create_charts_truck_revenue_filter_left(records) {
+        var date_filter = $("#revenue_per_truck_filter").val().split('to');
+        var sales_from_left = Math.floor(new Date(date_filter[0]).getTime() / 1000);
+        var sales_to_left = Math.floor(new Date(date_filter[1]).getTime() / 1000)
+
+        var new_records = [];
+        $.each(records, function(key, value) {
+
+            new_records[key] = value[7];
+
+        })
+
+        new_records = [...new Set(records.map(x => x[3]?x[3]:'unknown'))];
+
+        var service_revenue = [];
+        $.each(new_records, function(key, value) {
+            var revenue = 0;
+            $.each(records, function(records_key, records_value) {
+                var record_date = Math.floor(new Date(records_value[0]).getTime() / 1000);
+
+                if (sales_from_left <= record_date && sales_to_left >= record_date) {
+                    if (value == records_value[3]) {
+                        // console.log(records_value[10])
+                        if (records_value[11]) {
+                        var record_value_amount = records_value[11];
+                        record_value_amount = record_value_amount.split('$')
+                        var record_value_amount_converted = parseFloat(record_value_amount.toString().replace(/,/g, ''));
+
+                        if (Number.isFinite(record_value_amount_converted)) {
+                            record_value_amount_converted = record_value_amount_converted;
+                        } else {
+                            record_value_amount_converted = 0;
+                        }
+
+                        } else {
+                        var record_value_amount = 0;
+                        var record_value_amount_converted = record_value_amount;
+                        }
+                        revenue += record_value_amount_converted;
+                    }
+                }
+            })
+            service_revenue[key] = revenue;
+        })
+
+        var ctx = document.getElementById('revenue_per_truck_left').getContext('2d');
+
+        // // Define the data for the chart
+        var data = {
+            labels: new_records,
+            datasets: [{
+                label: 'Revenue Per Truck',
+                data: service_revenue, // Replace with your data values
+                backgroundColor: "rgba(0, 156, 173)"
+            }]
+        };
+
+        // // Define the options for the chart
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutoutPercentage: 50, // Adjust the size of the hole (0-100)
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (value, index, values) {
+                            return '$ ' + parseFloat(value).toFixed(2); // Append '$' to the tick value
+                        }
+                    }
+                }
+            },
+            legend: {
+                display: false,  // Hide the default legend
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    align: 'center',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            var label = context.dataset.label || '';
+
+                            if (label) {
+                                label += ': ';
+                            }
+
+                            label += '$' + context.formattedValue;
+
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        // // Create the doughnut chart
+        var myDoughnutChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    }
+
     function create_charts_service_revenue_right(records) {
         var sales_from_right = Math.floor(new Date($("#sales_from_right").val()).getTime() / 1000);
         var sales_to_right = Math.floor(new Date($("#sales_to_right").val()).getTime() / 1000)
@@ -508,6 +813,236 @@ $(document).ready(function() {
         // // Create the doughnut chart
         var myDoughnutChart = new Chart(ctx, {
             type: 'doughnut',
+            data: data,
+            options: options
+        });
+    }
+
+    function create_charts_service_revenue_filter_right(records) {
+        var date_filter = $("#revenue_per_service_filter2").val().split('to');
+        var sales_from_right = Math.floor(new Date(date_filter[0]).getTime() / 1000);
+        var sales_to_right = Math.floor(new Date(date_filter[1]).getTime() / 1000)
+
+        const currentDate = new Date();
+
+        // Set the time to 00:00:00 (midnight)
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Get the Unix timestamp for the beginning of the day
+        const startOfDayTimestamp = currentDate.getTime();
+
+        console.log(Math.floor(startOfDayTimestamp / 1000))
+
+        var new_records = [];
+        var total_service_revenue = 0;
+        $.each(records, function(key, value) {
+            var record_date = Math.floor(new Date(value[0]).getTime() / 1000);
+                
+            if (sales_from_right <= record_date && sales_to_right >= record_date) {
+                if (value[11]) {
+                    var total_service_revenue_split = value[11].split('$');
+                    total_service_revenue += parseFloat(total_service_revenue_split.toString().replace(/,/g, ''))
+                } else {
+                    total_service_revenue += 0;
+                }
+
+                new_records[key] = value[7];
+            }
+        })
+
+        new_records = [...new Set(records.map(x => x[7]?x[7]:'unknown'))];
+
+        var service_revenue = [];
+        $.each(new_records, function(key, value) {
+            var revenue = 0;
+            $.each(records, function(records_key, records_value) {
+                var record_date = Math.floor(new Date(records_value[0]).getTime() / 1000);
+                
+                if (sales_from_right <= record_date && sales_to_right >= record_date) {
+                    if (value == records_value[7]) {
+                        // console.log(records_value[10])
+                        if (records_value[11]) {
+                        var record_value_amount = records_value[11];
+                        record_value_amount = record_value_amount.split('$')
+                        var record_value_amount_converted = parseFloat(record_value_amount.toString().replace(/,/g, ''));
+
+                        if (Number.isFinite(record_value_amount_converted)) {
+                            record_value_amount_converted = record_value_amount_converted;
+                        } else {
+                            record_value_amount_converted = 0;
+                        }
+
+                        } else {
+                        var record_value_amount = 0;
+                        var record_value_amount_converted = record_value_amount;
+                        }
+                        revenue += record_value_amount_converted;
+                    }
+                }
+            })
+            service_revenue[key] = (revenue / total_service_revenue) * 100;
+        })
+
+        var ctx = document.getElementById('revenue_per_service_right').getContext('2d');
+
+        // // Define the data for the chart
+        var data = {
+            labels: new_records,
+            datasets: [{
+                data: service_revenue, // Replace with your data values
+            }]
+        };
+
+        // // Define the options for the chart
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutoutPercentage: 50, // Adjust the size of the hole (0-100)
+            legend: {
+                display: false,  // Hide the default legend
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    align: 'center',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            var label = context.label || '';
+
+                            if (label) {
+                                label += ': ';
+                            }
+
+                            label += parseFloat(context.formattedValue).toFixed(2) + '%';
+
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        // // Create the doughnut chart
+        var myDoughnutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+            options: options
+        });
+    }
+
+    function create_charts_truck_revenue_filter_right(records) {
+        var date_filter = $("#revenue_per_truck_filter2").val().split('to');
+        var sales_from_right = Math.floor(new Date(date_filter[0]).getTime() / 1000);
+        var sales_to_right = Math.floor(new Date(date_filter[1]).getTime() / 1000)
+
+        var new_records = [];
+        $.each(records, function(key, value) {
+
+            new_records[key] = value[7];
+
+        })
+
+        new_records = [...new Set(records.map(x => x[3]?x[3]:'unknown'))];
+
+        var service_revenue = [];
+        $.each(new_records, function(key, value) {
+            var revenue = 0;
+            $.each(records, function(records_key, records_value) {
+                var record_date = Math.floor(new Date(records_value[0]).getTime() / 1000);
+
+                if (sales_from_right <= record_date && sales_to_right >= record_date) {
+                    if (value == records_value[3]) {
+                        // console.log(records_value[10])
+                        if (records_value[11]) {
+                        var record_value_amount = records_value[11];
+                        record_value_amount = record_value_amount.split('$')
+                        var record_value_amount_converted = parseFloat(record_value_amount.toString().replace(/,/g, ''));
+
+                        if (Number.isFinite(record_value_amount_converted)) {
+                            record_value_amount_converted = record_value_amount_converted;
+                        } else {
+                            record_value_amount_converted = 0;
+                        }
+
+                        } else {
+                        var record_value_amount = 0;
+                        var record_value_amount_converted = record_value_amount;
+                        }
+                        revenue += record_value_amount_converted;
+                    }
+                }
+            })
+            service_revenue[key] = revenue;
+        })
+
+        var ctx = document.getElementById('revenue_per_truck_right').getContext('2d');
+
+        // // Define the data for the chart
+        var data = {
+            labels: new_records,
+            datasets: [{
+                label: 'Revenue Per Truck',
+                data: service_revenue, // Replace with your data values
+                backgroundColor: "rgba(0, 156, 173)"
+            }]
+        };
+
+        // // Define the options for the chart
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutoutPercentage: 50, // Adjust the size of the hole (0-100)
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (value, index, values) {
+                            return '$ ' + parseFloat(value).toFixed(2); // Append '$' to the tick value
+                        }
+                    }
+                }
+            },
+            legend: {
+                display: false,  // Hide the default legend
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    align: 'center',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            var label = context.dataset.label || '';
+
+                            if (label) {
+                                label += ': ';
+                            }
+
+                            label += '$' + context.formattedValue;
+
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        // // Create the doughnut chart
+        var myDoughnutChart = new Chart(ctx, {
+            type: 'bar',
             data: data,
             options: options
         });
